@@ -12,6 +12,7 @@ userName = ""
 createdPath = ""
 
 def readImg() :
+    # TODO: image_path = [captured_path, img[i]] when traverse all folder & images
     image_path =[ "taylor1.jpeg", "beckham1.jpeg"]
 
     result = DeepFace.verify(image_path[0], image_path[1])
@@ -49,6 +50,22 @@ def readImg() :
     else:
         cv2.imshow("Taylor Swift", img)
     cv2.waitKey(0)
+
+## FOLDER TRAVERSAL ##
+
+# def process_folder_images(folder_path):
+#     for root_dir, _, files in os.walk(folder_path):
+#         for file_name in files:
+#             if file_name.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.bmp')):
+#                 image_file_path = os.path.join(root_dir, file_name)
+#                 if compare_images(captured_image_path, image_file_path):
+#                     image_path.append(image_file_path)
+
+# def compare_images(image1_path, image2_path):
+#     result = DeepFace.verify(image1_path, image2_path)
+#     if result["verified"]:
+#         return True
+#     return False
 
 
 ##
