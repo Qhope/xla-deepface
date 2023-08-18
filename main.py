@@ -8,6 +8,9 @@ from tkinter import messagebox
 from pathlib import Path
 from datetime import date
 
+userName = ""
+createdPath = ""
+
 def readImg() :
     image_path =[ "taylor1.jpeg", "beckham1.jpeg"]
 
@@ -40,7 +43,9 @@ def readImg() :
 
 
     if (verified == False):
-        mainLoop();
+        regLoop();
+        print(userName)
+        # TODO: save the captured image to the folder with the username 
     else:
         cv2.imshow("Taylor Swift", img)
     cv2.waitKey(0)
@@ -48,22 +53,22 @@ def readImg() :
 
 ##
 def register(username):
+    global userName,createdPath
     if username:
+        userName = username;
         # Connect to the database
         connection = sqlite3.connect("face_recognition.db")
         cursor = connection.cursor()
 
         # Insert the user into the database
         current_date = date.today().strftime("%d/%m/%Y")
-        imgSource = "test/img.png"
         visit_sequence = 1
-        base_path = r"C:\\Users\\lnakh\\Desktop\\xla-deepface\\imgSource"
-        path = Path(base_path) / username
+        path = Path("./imgSource") / username
         path.mkdir()
         
         # Convert the path to a string before inserting it into the database
         path_str = str(path)
-        
+        createdPath = path_str
         cursor.execute("INSERT INTO user (username, created_date, img_source, visit_sequence) VALUES (?, ?, ?, ?)", (username, current_date, path_str, visit_sequence))
         connection.commit()
 
@@ -72,7 +77,7 @@ def register(username):
         messagebox.showinfo("Registration Successful", "Welcome "+ username)
         root.destroy();
     
-def mainLoop():
+def regLoop():
     global root
 
     root = tk.Tk()
@@ -104,6 +109,17 @@ def mainLoop():
     register_button = tk.Button(root, text="Register", command=lambda: register(username_entry.get()))
     register_button.pack(pady=10)
 
+    # Start the GUI event loop
+    root.mainloop()
+
+def logLoop():
+    global root
+
+    root = tk.Tk()
+    root.title("User Registration")
+
+    messagebox.showinfo("Registration Successful", "Welcome "+ username)
+    root.destroy();
     # Start the GUI event loop
     root.mainloop()
 
