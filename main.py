@@ -134,7 +134,8 @@ def register(username,errorLabel):
             errorLabel.config(text="Username already exists. Please choose a different username.")
         else:
             path = Path("./sourceImages") / username
-            path.mkdir()
+            if (not path.exists()):
+                path.mkdir()
 
         path_str = str(path)
         createdPath = path_str
