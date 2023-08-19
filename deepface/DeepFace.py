@@ -91,7 +91,7 @@ def verify(
     model_name="VGG-Face",
     detector_backend="opencv",
     distance_metric="cosine",
-    enforce_detection=False,
+    enforce_detection=True,
     align=True,
     normalization="base",
 ):

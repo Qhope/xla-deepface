@@ -7,7 +7,7 @@ import os
 from tkinter import messagebox
 from pathlib import Path
 from datetime import date
-from PIL import Image
+from PIL import Image,ImageTk
 
 userName = ""
 userPath = ""
@@ -47,7 +47,6 @@ def readImg() :
     if (len(captured_image) == 0):
         return
     image_path = process_folder_images("sourceImages",captured_image)
-    print("ABJAA", image_path)
     if (len(image_path) == 1):
         regLoop()
         # TODO: save the captured image to the folder with the username
@@ -77,12 +76,11 @@ def process_folder_images(folder_path, capturedImagePath):
 
 
 def compare_images(image1_path, image2_path):
-    print(image1_path, image2_path)
     global userPath
-    userPath = image2_path.split('\\')[1]
-    print(userPath)
-    result = DeepFace.verify(image1_path, image1_path)
-    if result["verified"]:
+    userPath = image2_path
+    try:
+        result = DeepFace.verify(image1_path, image2_path)
+        if result["verified"]:
         # facialAreas = result["facial_areas"]
         # img1Bound = facialAreas["img1"]
         # img2Bound = facialAreas["img2"]
@@ -108,14 +106,17 @@ def compare_images(image1_path, image2_path):
         # # concat 2 images
         # img = cv2.hconcat([img1, img2])
         # cv2.imshow("Welcome Customer",img)
-        logLoop()
       #  cv2.waitKey(0)
-        return True
+            logLoop()
+            return True
+    except Exception as e:
+         messagebox.showinfo("Error", "Cannot find face, please try again")
+         captureImage()
     return False
 
 
 ##
-def register(username):
+def register(username,errorLabel):
     global userName,createdPath
     if username:
         userName = username;
@@ -126,13 +127,18 @@ def register(username):
         # Insert the user into the database
         current_date = date.today().strftime("%d/%m/%Y")
         visit_sequence = 1
-        path = Path("./sourceImages") / username
-        path.mkdir()
-        
-        # Convert the path to a string before inserting it into the database
+
+        cursor.execute("SELECT * FROM user WHERE username = ?", (username,))
+        result = cursor.fetchall()
+        if len(result) > 0:
+            errorLabel.config(text="Username already exists. Please choose a different username.")
+        else:
+            path = Path("./sourceImages") / username
+            path.mkdir()
+
         path_str = str(path)
         createdPath = path_str
-        cursor.execute("INSERT INTO user (username, created_date, img_source, visit_sequence) VALUES (?, ?, ?, ?)", (username, current_date, path_str, visit_sequence))
+        cursor.execute("INSERT INTO user (username, created_date, img_source, visit_sequence,checkin_date) VALUES (?, ?, ?, ?,?)", (username, current_date, path_str, visit_sequence,current_date))
         connection.commit()
 
         # Close the database connection
@@ -168,29 +174,60 @@ def regLoop():
     username_entry = tk.Entry(frame)
     username_entry.pack(side="left", padx=(0, 10), pady=10)
 
+    # Error Label
+    error_label = tk.Label(root, text="", fg="red")
+    error_label.pack()
+
     # Register Button
-    register_button = tk.Button(root, text="Register", command=lambda: register(username_entry.get()))
+    register_button = tk.Button(root, text="Register", command=lambda: register(username_entry.get(),error_label))
     register_button.pack(pady=10)
 
     # Start the GUI event loop
     root.mainloop()
 
 def logLoop():
-    global root
-    # connection = sqlite3.connect("face_recognition.db")
-    # cursor = connection.cursor()
-    
-    # cursor.execute("SELECT * FROM user WHERE img_source = ?", (createdPath))
-    # current_date = date.today().strftime("%d/%m/%Y")
-    # visit_sequence = 1
-    # cursor.execute("INSERT INTO user (username, created_date, img_source, visit_sequence) VALUES (?, ?, ?, ?)", (username, current_date, path_str, visit_sequence))
-    # connection.commit()
-    # connection.close()
+    root = tk.Tk()
+    root.title("Checkin success")
 
-    # print(userName)
-    messagebox.showinfo("Checkin Successful", "Welcome "+userPath)
-    # root.destroy()
-    # # Start the GUI event loop
-    # root.mainloop()
+    username =  userPath.split('\\')[1]
+
+
+    connection = sqlite3.connect("face_recognition.db")
+    cursor = connection.cursor()
+    
+    cursor.execute("SELECT * FROM user WHERE username = ?", (username,))
+    print(username)
+    current_date = date.today().strftime("%d/%m/%Y")
+    result= cursor.fetchall()
+    print(result)
+    currentUsername,join_date,imgSrc,visit_times,checkin_date=result[0] 
+
+    cursor.execute("UPDATE user SET visit_sequence = ?, checkin_date = ? WHERE username = ?", (visit_times + 1,checkin_date ,username))
+
+    connection.commit()
+    
+    image = Image.open(userPath)  # Replace with your image file path
+    photo = ImageTk.PhotoImage(image)
+    image_label = tk.Label(root, image=photo)
+    image_label.image = photo
+    image_label.pack(pady=10)
+
+    # Add labels below the image
+    label1 = tk.Label(root, text="Username: "+ username)
+    label1.pack()
+
+    label2 = tk.Label(root, text="Checkin date: "+ checkin_date)
+    label2.pack()
+    
+    label3 = tk.Label(root, text="Visit sequences: "+ str(visit_times))
+    label3.pack()
+    
+    label4 = tk.Label(root, text="Join date: "+ join_date)
+    label4.pack()
+
+    messagebox.showinfo("Checkin Successful", "Welcome "+username)
+    connection.close()
+    root.destroy()
+    root.mainloop()
 
 readImg()
