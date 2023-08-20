@@ -18,12 +18,12 @@ def captureImage():
     camera = cv2.VideoCapture(0) 
     cv2.namedWindow("Camera Capture")
     capturedPath = ""
+    messagebox.showinfo("Notice", "Please press space to checkin")
     while True:
         ret, frame = camera.read()
         if not ret:
-            print("Failed to capture frame")
+            messagebox.showerror("Error", "Please press space to capture again")
             break
-
         cv2.imshow("Camera Capture", frame)
 
         key = cv2.waitKey(1)
