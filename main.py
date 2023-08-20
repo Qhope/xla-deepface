@@ -111,7 +111,7 @@ def compare_images(image1_path, image2_path):
             return True
     except Exception as e:
          messagebox.showinfo("Error", "Cannot find face, please try again")
-         captureImage()
+         readImg()
     return False
 
 
