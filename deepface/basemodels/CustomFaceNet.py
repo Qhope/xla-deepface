@@ -340,17 +340,21 @@ def data_gen(batch_size=32,PATH='./dataset/trainset', PATH_HAAR='./dataset/haarc
         yield ([np.array(anchor),np.array(positive),np.array(negative)],np.zeros((batch_size,1)).astype("float32"))
 
 def train(PATH, PATH_HAAR):
-    model = FinalModel(input_shape=(96,96,3))
+    try:
+        with tf.device('/device:GPU:0'):
+            model = FinalModel(input_shape=(96,96,3))
 
-    triplet_model_a=Input((96,96,3))
-    triplet_model_n=Input((96,96,3))
-    triplet_model_p=Input((96,96,3))
-    triplet_model_out=Concatenate()([model(triplet_model_a),model(triplet_model_p),model(triplet_model_n)])
-    triplet_model=Model([triplet_model_a,triplet_model_p,triplet_model_n],triplet_model_out)
+            triplet_model_a=Input((96,96,3))
+            triplet_model_n=Input((96,96,3))
+            triplet_model_p=Input((96,96,3))
+            triplet_model_out=Concatenate()([model(triplet_model_a),model(triplet_model_p),model(triplet_model_n)])
+            triplet_model=Model([triplet_model_a,triplet_model_p,triplet_model_n],triplet_model_out)
 
-    triplet_model.compile(optimizer='adam',loss=triplet_loss_t)
-    triplet_model.fit(data_gen(32,PATH, PATH_HAAR),steps_per_epoch=100,epochs=5)
-    triplet_model.save('triplet_model.h5')
+            triplet_model.compile(optimizer='adam',loss=triplet_loss_t)
+            triplet_model.fit(data_gen(32,PATH, PATH_HAAR),steps_per_epoch=100,epochs=20)
+            triplet_model.save('triplet_model.h5')
+    except RuntimeError as e:
+        print('error',e)
 
 def loadModel():
     triplet_model=keras.saving.load_model('./checkpoint/triplet_model.h5',custom_objects={'triplet_loss_t':triplet_loss_t})
