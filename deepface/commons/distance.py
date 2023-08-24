@@ -39,7 +39,7 @@ def findThreshold(model_name, distance_metric):
         "OpenFace": {"cosine": 0.10, "euclidean": 0.55, "euclidean_l2": 0.55},
         "DeepFace": {"cosine": 0.23, "euclidean": 64, "euclidean_l2": 0.64},
         "DeepID": {"cosine": 0.015, "euclidean": 45, "euclidean_l2": 0.17},
-        "CustomFacenet":  {"cosine": 0.10, "euclidean": 10, "euclidean_l2": 0.80},
+        "CustomFacenet":  {"cosine": 0.40, "euclidean": 10, "euclidean_l2": 0.80},
     }
 
     threshold = thresholds.get(model_name, base_threshold).get(distance_metric, 0.4)
