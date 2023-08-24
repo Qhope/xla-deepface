@@ -357,6 +357,7 @@ def train(PATH, PATH_HAAR):
         print('error',e)
 
 def loadModel():
+    print('load model')
     triplet_model=keras.saving.load_model('./checkpoint/triplet_model.h5',custom_objects={'triplet_loss_t':triplet_loss_t})
 
     return triplet_model.layers[3]

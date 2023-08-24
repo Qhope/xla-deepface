@@ -30,20 +30,18 @@ def captureImage():
         capturedPath = "captured_image.jpg"
         if key == 32:  # Space key
             cv2.imwrite("captured_image.jpg", frame)
-            break
-        elif key == 27:  # Esc key
-            break
-
-    camera.release()
-    cv2.destroyAllWindows()
-    return capturedPath
+            readImg ("captured_image.jpg")
+        elif key == 27:
+            camera.release()
+            cv2.destroyAllWindows()  # Esc key
+            return
 
 
 
 
-def readImg() :
+def readImg(capture_path) :
     # TODO: image_path = [captured_path, img[i]] when traverse all folder & images
-    captured_image = captureImage()
+    captured_image = capture_path
     if (len(captured_image) == 0):
         return
     image_path = process_folder_images("sourceImages",captured_image)
@@ -61,14 +59,10 @@ def process_folder_images(folder_path, capturedImagePath):
         os.makedirs(folder_path)
     image_path = []
     image_path.append(capturedImagePath)
-    print(image_path)
     for root_dir, _, files in os.walk(folder_path):
         for file_name in files:
-            print(file_name);
-            print(files);
             if file_name.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.bmp')):
                 image_file_path = os.path.join(root_dir, file_name)
-                print(image_file_path)
                 if compare_images(capturedImagePath, image_file_path):
                     image_path.append(image_file_path)
                     return image_path
@@ -79,34 +73,8 @@ def compare_images(image1_path, image2_path):
     global userPath
     userPath = image2_path
     try:
-        result = DeepFace.verify(image1_path, image2_path)
+        result = DeepFace.verify(image1_path, image2_path,distance_metric="euclidean_l2")
         if result["verified"]:
-        # facialAreas = result["facial_areas"]
-        # img1Bound = facialAreas["img1"]
-        # img2Bound = facialAreas["img2"]
-        # # draw rectangle on detected face
-
-        # img1 = cv2.imread(image1_path)
-        # img2 = cv2.imread(image2_path)
-
-        # # convert  x,y,w,h to points
-        # img1Bound['w'] = img1Bound['w'] + img1Bound['x']
-        # img1Bound['h'] = img1Bound['h'] + img1Bound['y']
-
-        # img2Bound['w'] = img2Bound['w'] + img2Bound['x']
-        # img2Bound['h'] = img2Bound['h'] + img2Bound['y']
-
-        # cv2.rectangle(img1, (img1Bound['x'], img1Bound['y']), (img1Bound['w'],img1Bound['h']), (0, 255, 0), 2)
-        # cv2.rectangle(img2, (img2Bound['x'], img2Bound['y']), (img2Bound['w'], img2Bound['h']), (0, 255, 0), 2)
-
-        # # resize img to 720px width and 480px height
-        # img1 = cv2.resize(img1, (400, 400))
-        # img2 = cv2.resize(img2, (400, 400))
-
-        # # concat 2 images
-        # img = cv2.hconcat([img1, img2])
-        # cv2.imshow("Welcome Customer",img)
-      #  cv2.waitKey(0)
             logLoop()
             return True
     except Exception as e:
@@ -197,10 +165,8 @@ def logLoop():
     cursor = connection.cursor()
     
     cursor.execute("SELECT * FROM user WHERE username = ?", (username,))
-    print(username)
     current_date = date.today().strftime("%d/%m/%Y")
     result= cursor.fetchall()
-    print(result)
     currentUsername,join_date,imgSrc,visit_times,checkin_date=result[0] 
 
     cursor.execute("UPDATE user SET visit_sequence = ?, checkin_date = ? WHERE username = ?", (visit_times + 1,checkin_date ,username))
@@ -231,4 +197,5 @@ def logLoop():
     root.destroy()
     root.mainloop()
 
-readImg()
+
+captureImage()

@@ -25,6 +25,7 @@ from deepface.basemodels import (
     DlibWrapper,
     ArcFace,
     SFace,
+    CustomFaceNet
 )
 from deepface.extendedmodels import Age, Gender, Race, Emotion
 from deepface.commons import functions, realtime, distance as dst
@@ -69,6 +70,7 @@ def build_model(model_name):
         "Age": Age.loadModel,
         "Gender": Gender.loadModel,
         "Race": Race.loadModel,
+        "CustomFacenet": CustomFaceNet.loadModel
     }
 
     if not "model_obj" in globals():
